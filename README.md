@@ -134,9 +134,12 @@ pico principal y sólo evalúan flujos pequeños. Se utiliza meteorología
 observada/provisional, no pronósticos archivados. No se ha demostrado una
 mejora predictiva ni transferencia entre años.
 
-Por ese resultado, **Usar calibración local 2026 inicia desactivado**. Puede
-activarse en la barra lateral para comparar. La capa se integra antes de la
-asimilación, en los escenarios y en la exportación auditable, con estos controles:
+**Usar calibración local 2026 inicia activado**. El interruptor está sobre el
+gráfico principal de emergencia, en **Estado del lote**, y permite desactivar
+y volver a activar la calibración para comparar con PREDWEEM base. La selección
+se conserva durante la sesión y actualiza el gráfico, el estado del gemelo,
+los escenarios y la exportación auditable. La capa se integra antes de la
+asimilación, con estos controles:
 
 - sólo se aplica si se selecciona la localidad Balcarce;
 - no utiliza el perfil al consultar fechas anteriores al 15/08/2026;

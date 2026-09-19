@@ -233,13 +233,6 @@ with st.sidebar:
     st.markdown("## Configuración del gemelo")
     site_id = st.text_input("Identificador del lote", "Balcarce-01")
     calibration_site = st.selectbox("Localidad del lote", ["Balcarce", "Otra localidad"])
-    calibration_enabled = st.checkbox(
-        "Usar calibración local 2026", value=False,
-        help=(
-            "Perfil experimental de Balcarce, desactivado de inicio porque la "
-            "evaluación temporal disponible no muestra mejora. Puede activarlo para comparar."
-        ),
-    )
     latitude = st.number_input("Latitud", value=-37.7664, format="%.6f")
     longitude = st.number_input("Longitud", value=-58.2999, format="%.6f")
     source_option = st.radio(
@@ -360,6 +353,8 @@ except (ValueError, KeyError, TypeError) as error:
     calibration_profile = None
     st.warning(f"No se pudo cargar el perfil de calibración: {error}")
 current_model_fingerprint = model_fingerprint(BASE)
+# El interruptor del gráfico actualiza su estado antes de cada recálculo.
+calibration_enabled = st.session_state.get("local_calibration_enabled", True)
 calibrated_trajectory, calibration_audit = apply_site_calibration(
     base_trajectory, calibration_profile,
     site=calibration_site, as_of=as_of, enabled=calibration_enabled,
@@ -435,7 +430,6 @@ tab_state, tab_observations, tab_calibration, tab_scenarios, tab_audit = st.tabs
 )
 
 with tab_state:
-    st.caption(calibration_audit["reason"])
     if snapshot["seasonal_potential_plm2"] is not None:
         field_metrics = st.columns(3)
         field_metrics[0].metric(
@@ -450,6 +444,17 @@ with tab_state:
             "Modo de actualización",
             snapshot["assimilation_mode"].capitalize(),
         )
+    st.toggle(
+        "Usar calibración local 2026",
+        value=calibration_enabled,
+        key="local_calibration_enabled",
+        help=(
+            "Activada por defecto. Desactívela para comparar con PREDWEEM base. "
+            "El perfil de Balcarce es experimental; su aplicación depende de la "
+            "localidad, la fecha y las observaciones asimiladas."
+        ),
+    )
+    st.caption(calibration_audit["reason"])
     st.plotly_chart(
         trajectory_chart(
             twin_trajectory,
@@ -872,8 +877,8 @@ with tab_calibration:
         validation_metrics[1].metric("RMSE calibrado · evaluación temporal", f'{validation["rmse_calibrated_plm2"]:.2f} plantas/m²')
         st.caption(
             'Los tres intervalos evaluados son posteriores al pico y tienen baja '
-            'emergencia. No muestran una mejora predictiva; por eso la opción '
-            'inicia desactivada. Se requieren nuevas campañas para evaluar el pico principal.'
+            'emergencia. No muestran una mejora predictiva. Se requieren nuevas '
+            'campañas para evaluar el pico principal.'
         )
         st.dataframe(
             pd.read_csv(CALIBRATION_DIR / "balcarce_2026_holdout.csv"),
