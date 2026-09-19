@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "method": "monotone_logit_v1",
+  "profile_id": "balcarce-2026-08-15-v1-beefd78de9",
+  "site": "Balcarce",
+  "status": "experimental_una_campana",
+  "training_year": 2026,
+  "training_through": "2026-08-15",
+  "available_from": "2026-08-15",
+  "season_complete": false,
+  "first_interval_excluded": true,
+  "parameters": {
+    "offset": 0.6499999999999999,
+    "slope": 1.425
+  },
+  "fit": {
+    "n_observations": 18,
+    "n_intervals": 17,
+    "observed_window_total_plm2": 8280.0,
+    "rmse_base_plm2": 409.2090820050134,
+    "rmse_calibrated_plm2": 87.67997286114851,
+    "weighted_mse_base": 0.4218999062619949,
+    "weighted_mse_calibrated": 0.01936955817821048,
+    "regularization": 0.05,
+    "nuisance_scale_base": 8280.000000000002,
+    "nuisance_scale_calibrated": 8280.0,
+    "parameter_at_bound": false
+  },
+  "observations_start": "2026-03-12",
+  "initial_zero_reference": true,
+  "model_fingerprint": "a5fbf7c9d2ce22951116aaa0fffa74563c0048ffd5647b5ecc1d86f6dfd1cb70",
+  "model_parameters": {
+    "cobertura_pct": 10.0,
+    "w_max": 10.0,
+    "umbral_termoinhibicion": 24.0,
+    "umbral_choque_hidrico": 45.0,
+    "exponente_kr": 0.0,
+    "latitud": -37.7664,
+    "longitud": -58.2999,
+    "latencia_jd": 25,
+    "techo_choque": 1.0,
+    "calentamiento_suelo": 0.0,
+    "umbral_primer_pico": 0.2,
+    "t_base": 2.0,
+    "t_opt": 20.0,
+    "t_crit": 30.0,
+    "tt_control": 600.0,
+    "tt_limite": 800.0,
+    "decay_enabled": true,
+    "decay_tau_days": 3.5656,
+    "decay_beta": 0.48684,
+    "decay_intensity": 0.95,
+    "cohort_exhaustion_days": 110,
+    "cohort_remaining_threshold": 0.005
+  },
+  "seasonal_reference": {
+    "include_patterns": [
+      "balcarce"
+    ],
+    "excluded_years": [],
+    "n_campaigns": 1,
+    "campaigns": "emererel2025 balcarce.xlsx"
+  },
+  "source": {
+    "original_file": "VALIDA (1) (4).xlsx",
+    "original_sha256": "3abdde78710763179029ddd713cfa314a9d09c2c4853496575f37db253718189",
+    "sheet": "Hoja1",
+    "cell_range": "A1:B19",
+    "site_assignment": "Balcarce, según solicitud del usuario; el archivo no incluye nombre de sitio o lote.",
+    "extracted_on": "2026-09-19",
+    "weather_repository_commit": "584796aeddb5467d1e28a477cfa218b75296bd5e",
+    "first_interval_start": "2026-03-12",
+    "initial_zero_reference": true,
+    "campaign_complete": false,
+    "extraction_note": "Se conservaron FECHA y PLM2; se omitieron exclusivamente columnas y filas vacías.",
+    "observations_file": "balcarce_2026_counts.csv",
+    "observations_sha256": "463d88c8369919e120805abae78b8523d2715aa1cf5b5ac801798b9e46149205",
+    "weather_file": "balcarce_2026_weather.csv",
+    "weather_sha256": "33cb38da4d3aed9bc78faefd61fe6d438b91dcdadf540a065cd16405221ec17e",
+    "weather_types": {
+      "Observado": 221,
+      "Provisional": 6
+    },
+    "observed_total_plm2": 8280.0,
+    "replicate_count": null,
+    "replicate_conversion_factor": null
+  },
+  "validation": {
+    "kind": "hindcast_condicional_con_meteorologia_realizada",
+    "independent_season": false,
+    "n_intervals": 3,
+    "note": "Ajuste con datos hasta cada corte y evaluación del siguiente intervalo. Se usa meteorología observada/provisional, no pronósticos archivados. No demuestra transferencia a otra campaña ni precisión operativa a siete días.",
+    "rmse_base_plm2": 3.9267185210258035,
+    "rmse_calibrated_plm2": 5.357010491206914,
+    "intervals_improved": 0
+  },
+  "limitations": [
+    "Una sola campaña incompleta. No se estima ni transfiere un total estacional.",
+    "El registro inicial de cero del 2026-03-12 delimita el primer intervalo; no se infiere ausencia de emergencia en fechas anteriores.",
+    "Cobertura de 10 % y Wmax de 10 mm son supuestos de la configuración operativa; el archivo no informa manejo ni cobertura.",
+    "El archivo FECHA + PLM2 no incluye repeticiones. Se utiliza un piso de ponderación común, no un error de muestreo medido.",
+    "Se conservan el decaimiento Weibull, la extinción de la cohorte y la referencia histórica local de Balcarce.",
+    "La transformación no crea cohortes en fechas bloqueadas por el motor biofísico.",
+    "Un parámetro en su límite indica que persisten diferencias estructurales.",
+    "El ajuste no reduce automáticamente la incertidumbre de asimilación.",
+    "Los gráficos de la campaña de ajuste son retrospectivos, no predicciones independientes."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "original_file": "VALIDA (1) (4).xlsx",
+  "original_sha256": "3abdde78710763179029ddd713cfa314a9d09c2c4853496575f37db253718189",
+  "sheet": "Hoja1",
+  "cell_range": "A1:B19",
+  "site_assignment": "Balcarce, según solicitud del usuario; el archivo no incluye nombre de sitio o lote.",
+  "extracted_on": "2026-09-19",
+  "weather_repository_commit": "584796aeddb5467d1e28a477cfa218b75296bd5e",
+  "first_interval_start": "2026-03-12",
+  "initial_zero_reference": true,
+  "campaign_complete": false,
+  "extraction_note": "Se conservaron FECHA y PLM2; se omitieron exclusivamente columnas y filas vacías."
+}

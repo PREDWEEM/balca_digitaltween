@@ -17,7 +17,8 @@ flowchart TD
     B --> C["Agotamiento pospico Balcarce"]
     C --> D["Trayectoria diaria base"]
     E["Flujos observados"] --> F["Asimilación secuencial"]
-    D --> F
+    D --> I["Calibración local opcional"]
+    I --> F
     F --> G["Estado actualizado"]
     G --> H["Pronóstico y escenarios 7 días"]
 ```
@@ -76,6 +77,94 @@ K = \frac{P}{P+R}, \qquad x^+ = x^- + K(y-x^-)
 Después de cada observación, la trayectoria futura se reancla sobre la fracción
 remanente del perfil concentrado. La asimilación no recalibra automáticamente
 los pesos de la ANN ni los parámetros Weibull.
+
+## Calibración por sitio con datos de 2026
+
+Se incorporó la misma capa externa de Bordenave, **ajustada con los datos y
+el motor de Balcarce**. La pestaña **Calibración por sitio** conserva los
+conteos, muestra el ajuste y la evaluación temporal, y permite descargar los
+datos originales en CSV. Los coeficientes de Bordenave no se transfirieron.
+
+El archivo `VALIDA (1) (4).xlsx`, hoja `Hoja1`, contiene **18 fechas** entre
+el 12/03 y el 15/08/2026, en formato `FECHA + PLM2`, sin repeticiones. El
+registro inicial de cero delimita el primer intervalo de ocho días hasta el
+20/03, con 6300 plantas/m². Se ajustan los **17 intervalos reales**, de 5 a
+16 días, sin crear observaciones diarias interpoladas. El total registrado
+es **8280 plantas/m²**; no se declara que la campaña haya finalizado ni se
+transfiere ese total como potencial de otros lotes.
+
+La serie meteorológica fija abarca **227 días, del 01/01 al 15/08/2026**:
+221 observados SIGA Balcarce y 6 provisionales ECMWF histórico. Contiene
+TMAX, TMIN, precipitación y procedencia. La meteorología operativa sigue
+actualizándose por separado y no modifica automáticamente el perfil.
+
+La transformación es la misma que en Bordenave:
+
+\[
+F_{local}=\operatorname{logistic}(a+b\operatorname{logit}(F_{base})).
+\]
+
+Se ajustan dos parámetros mediante una búsqueda acotada y regularizada hacia
+la identidad (`a ∈ [-1.5, 1.5]`, `b ∈ [0.6, 1.6]`). Cada curva se escala al
+total de la ventana muestreada para comparar flujos por intervalo. Esa escala
+es auxiliar y no constituye una estimación transferible del potencial.
+Al no haber repeticiones, todos los intervalos utilizan el mismo piso de
+ponderación: 10 % del máximo flujo observado, **630 plantas/m²**. No se
+presenta ese valor como error estándar de muestreo; la columna de error
+estándar se deja vacía.
+
+La calibración conserva los pesos de la ANN, los filtros térmicos e hídricos,
+el decaimiento Weibull, la extinción de la cohorte y el reloj de 600–800 °Cd.
+No crea flujo donde la curva base está detenida. Se usan los valores de la
+interfaz local: **cobertura 10 % y Wmax 10 mm**, y la referencia histórica
+`emererel2025 balcarce.xlsx`. El archivo de campo no informa cobertura ni
+manejo; cambiar esas condiciones en la interfaz no valida la transferencia
+del ajuste a ellas.
+
+### Resultados y uso
+
+El RMSE sobre los 17 intervalos usados para ajustar pasa de **409,21 a
+87,68 plantas/m²**. El perfil final tiene `a=0,65`, `b=1,425`, sin alcanzar
+los límites permitidos. Es ajuste retrospectivo sobre una sola campaña.
+
+En tres evaluaciones temporales, ajustadas con datos hasta cada corte y
+evaluadas en el intervalo siguiente, el RMSE pasa de **3,93 a 5,36 plantas/m²**:
+dos intervalos empeoran y uno permanece igual. Los tres son posteriores al
+pico principal y sólo evalúan flujos pequeños. Se utiliza meteorología
+observada/provisional, no pronósticos archivados. No se ha demostrado una
+mejora predictiva ni transferencia entre años.
+
+Por ese resultado, **Usar calibración local 2026 inicia desactivado**. Puede
+activarse en la barra lateral para comparar. La capa se integra antes de la
+asimilación, en los escenarios y en la exportación auditable, con estos controles:
+
+- sólo se aplica si se selecciona la localidad Balcarce;
+- no utiliza el perfil al consultar fechas anteriores al 15/08/2026;
+- si se asimilan conteos de la campaña 2026, conserva la base original para
+  evitar reutilizar esa campaña como calibración y nueva evidencia;
+- admite asimilar conteos de campañas posteriores sobre el perfil local;
+- un cambio del motor, pesos o referencia invalida la huella del perfil;
+- conserva separadas las curvas base, calibrada y asimilada.
+
+Los conteos de referencia no se insertan automáticamente en SQLite ni
+sobrescriben observaciones guardadas. Para asimilarlos en un lote, descargue
+el CSV desde la pestaña y cárguelo en **Observaciones**. El cierre meteorológico
+del 01/10/2026 se mantiene; una campaña posterior requiere configurar su
+meteorología. El perfil fue preparado el 19/09/2026, por lo que las consultas
+retrospectivas de 2026 no se presentan como pronósticos históricos reales.
+
+### Reproducción y trazabilidad
+
+```bash
+python scripts/calibrate_site.py
+python -m pytest -q
+```
+
+Las entradas y salidas se conservan en `data/calibration/`: conteos,
+meteorología fija, procedencia, perfil JSON, ajuste por intervalos y evaluación
+temporal. Se registran hashes del archivo adjunto, los datos y el modelo.
+El identificador del perfil distingue revisiones aun si conservan la última
+fecha de muestreo. El script no descarga meteorología ni reentrena la ANN.
 
 ## Datos admitidos
 
