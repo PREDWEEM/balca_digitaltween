@@ -9,6 +9,31 @@ que se mantiene intacto. Este repositorio agrega una capa independiente de
 estado, asimilación de observaciones, persistencia por lote, pronóstico a siete
 días y simulación de escenarios.
 
+## Visitas periódicas para reducir la hibernación
+
+El workflow [mantener_activo.yml](.github/workflows/mantener_activo.yml) abre
+[la aplicación de Balcarce](https://jzthpzmfwwtom44dsvkjapp.streamlit.app/)
+con Chromium cada cuatro horas: 00:41, 04:41, 08:41, 12:41, 16:41 y 20:41 UTC
+(01:41, 05:41, 09:41, 13:41, 17:41 y 21:41 de Argentina).
+También permite ejecución manual desde
+**Actions → Mantener activo el gemelo Balcarce → Run workflow** y se ejecuta
+al modificar el workflow o su script.
+
+Cuando aparece **Yes, get this app back up!**, la tarea hace clic en el botón
+y espera la apertura, con un límite total de cinco minutos. Comprueba el
+encabezado de Balcarce, el indicador de emergencia, el panel principal y su
+gráfico, incluso si están dentro de un iframe. Una respuesta HTTP 200 por sí
+sola no cuenta como éxito. Si la app muestra una excepción o no termina de
+cargar, la ejecución queda fallida; los avisos dependen de las preferencias
+de notificaciones de GitHub Actions.
+
+La tarea no requiere secretos ni modifica observaciones o parámetros del modelo.
+Playwright se instala solamente en el ejecutor de Actions. Esto reduce el riesgo
+de hibernación, pero **no garantiza disponibilidad continua**:
+[Streamlit suspende las apps sin visitas durante 12 horas](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app#app-hibernation)
+y [GitHub puede demorar tareas o desactivarlas tras 60 días sin actividad en un repositorio público](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+Si ocurre lo último, vuelva a habilitar el workflow desde Actions.
+
 ## Arquitectura
 
 ```mermaid
