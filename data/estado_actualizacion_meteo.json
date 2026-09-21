@@ -1,10 +1,10 @@
 {
-  "ejecucion_utc": "2026-09-20T20:59:37+00:00",
+  "ejecucion_utc": "2026-09-21T16:33:05+00:00",
   "sitio": "Balcarce / INTA",
   "latitud": -37.7664,
   "longitud": -58.2999,
   "estado_siga": "SIGA_remoto",
-  "ultima_observacion_siga": "2026-09-16",
+  "ultima_observacion_siga": "2026-09-19",
   "huecos_siga": [
     "2026-04-23",
     "2026-04-24",
@@ -12,19 +12,17 @@
     "2026-06-21",
     "2026-06-22",
     "2026-06-23",
-    "2026-09-17",
-    "2026-09-18",
-    "2026-09-19"
+    "2026-09-20"
   ],
   "fuente_provisional": "ECMWF_IFS_HISTORICO",
-  "filas_provisionales": 9,
+  "filas_provisionales": 7,
   "inicio_provisional": "2026-04-23",
-  "fin_provisional": "2026-09-19",
+  "fin_provisional": "2026-09-20",
   "fin_campania": "2026-10-01",
   "fuente_pronostico": "ECMWF_IFS_ENS_025",
   "estadistico_operativo": "P50",
-  "inicio_pronostico": "2026-09-20",
-  "fin_pronostico": "2026-09-26",
+  "inicio_pronostico": "2026-09-21",
+  "fin_pronostico": "2026-09-27",
   "miembros_validos_min": 51,
   "huecos_finales": []
 }
