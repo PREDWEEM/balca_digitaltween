@@ -12,7 +12,7 @@ from predweem_twin.calibration import (
 )
 from predweem_twin.core import ModelParameters, PracticalANNModel, run_predweem
 from predweem_twin.observations import prepare_observations
-from predweem_twin.seasonal import load_seasonal_reference
+from predweem_twin.seasonal import load_local_seasonal_reference
 
 
 ROOT = Path(__file__).parents[1]
@@ -122,10 +122,7 @@ def test_known_transformation_can_be_learned_without_seasonal_total():
 def real_data():
     weather = pd.read_csv(DATA / "balcarce_2026_weather.csv")
     model = PracticalANNModel.from_directory(ROOT / "models")
-    reference = load_seasonal_reference(
-        ROOT / "models/modelo_clusters_k3.pkl", excluded_years=(),
-        include_patterns=("balcarce",),
-    )
+    reference = load_local_seasonal_reference(ROOT, as_of="2026-08-15")
     trajectory = run_predweem(
         weather, model, ModelParameters(),
         normalization_as_of="2026-08-15", seasonal_reference=reference,
@@ -168,7 +165,8 @@ def test_calibration_keeps_balcarce_decay_exhaustion_and_local_reference(real_da
     assert saved["model_parameters"]["w_max"] == 10.
     assert saved["model_parameters"]["decay_enabled"]
     assert saved["seasonal_reference"]["include_patterns"] == ["balcarce"]
-    assert saved["seasonal_reference"]["campaigns"] == "emererel2025 balcarce.xlsx"
+    assert saved["seasonal_reference"]["campaigns"] == "emererel2025 balcarce.xlsx, balcarce_2026_counts.csv"
+    assert saved["seasonal_reference"]["n_campaigns"] == 2
 
 
 def test_fit_matches_persisted_profile_and_does_not_mutate_network(real_data):

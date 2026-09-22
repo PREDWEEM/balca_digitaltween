@@ -71,14 +71,81 @@ ensanchar la cola del perfil Balcarce.
 
 ## Referencia estacional local
 
-El clasificador histórico común contiene campañas de varias localidades. Para
-normalizar una campaña meteorológica parcial, este gemelo selecciona únicamente
-las curvas cuyo nombre identifica a Balcarce.
+El pool admite **exclusivamente Balcarce 2025 y Balcarce 2026**, con el mismo
+peso por campaña, independientemente de la cantidad de plantas registrada:
 
-La versión inicial dispone de una campaña local dentro del archivo histórico.
-Por eso su mediana permite evitar que el último día del pronóstico se interprete
-como 100 %, pero P10 y P90 todavía son preliminares. Deben incorporarse nuevas
-campañas independientes para estimar incertidumbre histórica local.
+- **2025:** curva `emererel2025 balcarce.xlsx`, identificada dentro de
+  `models/modelo_clusters_k3.pkl` y normalizada por su propio total.
+- **2026:** `data/calibration/balcarce_2026_counts.csv`, 18 fechas del
+  **12/03 al 15/08/2026**, con **8280 plantas/m²** registradas. El acumulado
+  se divide por el total de esa ventana y se interpola entre visitas.
+
+Quedan excluidas 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2023, 2024,
+San Pedro y Tres Arroyos 2025. Una lista positiva del nombre de Balcarce 2025
+impide incorporar otras series por cambios en los filtros o en el archivo
+compartido. No se modifican las curvas originales del modelo.
+
+La referencia 2026 se habilita desde el **15/08/2026**, cuando se conoce su
+total registrado. Para cortes anteriores se usa **sólo 2025**, incluso al
+ajustar y evaluar intervalos de la calibración. En 2027 se usan ambas campañas.
+La inclusión en el pool no inserta esos conteos como observaciones del lote.
+
+Antes del 12 de marzo no hay referencia 2026: el resumen usa 2025. Al sumarse
+la segunda curva, los cuantiles pueden disminuir por el cambio de composición;
+se conserva el máximo acumulado previo para evitar retrocesos artificiales.
+Los cuantiles empíricos, las dos curvas, el número de campañas por día y las
+exclusiones se pueden consultar y descargar en **Trazabilidad**. P10 y P90
+son descriptivos de estos dos años, no intervalos de confianza.
+
+Después del último conteo de 2026 se conserva su 100 % como supuesto de
+referencia; la curva individual auditable se limita a la ventana registrada.
+El final del archivo no certifica el fin biológico de la emergencia y el
+100 % no representa agotamiento del banco de semillas. El flujo histórico
+se deriva del acumulado interpolado; no son observaciones diarias.
+
+## Gráficos y configuración
+
+La configuración está en el cuerpo principal, sin menú lateral. Dos gráficos
+paralelos muestran **flujo de emergencia** y **emergencia acumulada**, con eje
+temporal del 1 de enero al **1 de octubre**. El pool histórico se muestra con
+colores tenues durante toda la ventana disponible; el gemelo muestra la
+meteorología disponible y hasta siete días de proyección desde el corte.
+No se muestran curvas anuales históricas separadas en el gráfico principal.
+
+El flujo inicia en vista **Semanal**, con alternativa **Diario**. Ambas series
+usan porcentaje del total por semana o día: histórico respecto de su ventana
+registrada y gemelo respecto del total estacional estimado. Las semanas se
+suman de lunes a domingo; las barras parciales se rayan y muestran cuántos
+días incluyen. La interpolación entre visitas suaviza los picos históricos.
+El cambio de frecuencia no altera el acumulado ni el estado del gemelo.
+
+## Intensidad de emergencia a siete días
+
+Se suma `EMERREL_TWIN` desde el día siguiente al corte hasta siete días después,
+y se divide por el máximo semanal del pool histórico orientativo del mismo
+gráfico. El máximo usa exclusivamente semanas completas de lunes a domingo
+entre enero y el 1 de octubre, con la referencia disponible en ese corte.
+
+- 🔴 **Alta:** más del 75 % del máximo histórico.
+- 🟠 **Media:** del 25 al 75 %, ambos límites incluidos.
+- 🟡 **Baja:** flujo positivo menor al 25 % del máximo.
+- 🟢 **Nula:** flujo semanal exactamente cero, con siete días válidos.
+
+Sin siete días futuros válidos se indica pronóstico ausente o incompleto en
+gris; un horizonte truncado no se clasifica como flujo nulo. Sin máximo
+histórico positivo, un flujo positivo se indica sin referencia. La intensidad
+es una comparación de flujos, no una probabilidad de emergencia.
+
+## Semáforo térmico desde el primer pico
+
+- 🔴 **FUERA DE CONTROL:** >800 °Cd.
+- 🟠 **ULTIMO PLAZO:** >700 y ≤800 °Cd.
+- 🟡 **CONTROL A TIEMPO:** ≥600 y ≤700 °Cd.
+- 🟢 **AUN NO CONTROLAR:** <600 °Cd.
+
+Se usa el tiempo térmico de la fecha consultada, sin redondear. Estos rótulos
+no alteran el cálculo térmico, el decaimiento Weibull ni la extinción de la
+cohorte del motor de Balcarce; acompañan el monitoreo y el criterio profesional.
 
 ## Asimilación de observaciones
 
@@ -141,8 +208,9 @@ estándar se deja vacía.
 La calibración conserva los pesos de la ANN, los filtros térmicos e hídricos,
 el decaimiento Weibull, la extinción de la cohorte y el reloj de 600–800 °Cd.
 No crea flujo donde la curva base está detenida. Se usan los valores de la
-interfaz local: **cobertura 10 % y Wmax 10 mm**, y la referencia histórica
-`emererel2025 balcarce.xlsx`. El archivo de campo no informa cobertura ni
+interfaz local: **cobertura 10 % y Wmax 10 mm**, y el pool histórico local
+2025–2026 en el ajuste final. Las evaluaciones anteriores al 15/08 usan sólo
+2025 para evitar información futura. El archivo de campo no informa cobertura ni
 manejo; cambiar esas condiciones en la interfaz no valida la transferencia
 del ajuste a ellas.
 
@@ -159,8 +227,8 @@ pico principal y sólo evalúan flujos pequeños. Se utiliza meteorología
 observada/provisional, no pronósticos archivados. No se ha demostrado una
 mejora predictiva ni transferencia entre años.
 
-**Usar calibración local 2026 inicia activado**. El interruptor está sobre el
-gráfico principal de emergencia, en **Estado del lote**, y permite desactivar
+**Usar calibración local 2026 inicia activado**. El interruptor está sobre los
+gráficos de emergencia, en **Estado del lote**, y permite desactivar
 y volver a activar la calibración para comparar con PREDWEEM base. La selección
 se conserva durante la sesión y actualiza el gráfico, el estado del gemelo,
 los escenarios y la exportación auditable. La capa se integra antes de la
@@ -178,7 +246,7 @@ Los conteos de referencia no se insertan automáticamente en SQLite ni
 sobrescriben observaciones guardadas. Para asimilarlos en un lote, descargue
 el CSV desde la pestaña y cárguelo en **Observaciones**. El cierre meteorológico
 del 01/10/2026 se mantiene; una campaña posterior requiere configurar su
-meteorología. El perfil fue preparado el 19/09/2026, por lo que las consultas
+meteorología. El perfil fue recalculado con el pool local el 22/09/2026, por lo que las consultas
 retrospectivas de 2026 no se presentan como pronósticos históricos reales.
 
 ### Reproducción y trazabilidad
@@ -193,6 +261,11 @@ meteorología fija, procedencia, perfil JSON, ajuste por intervalos y evaluació
 temporal. Se registran hashes del archivo adjunto, los datos y el modelo.
 El identificador del perfil distingue revisiones aun si conservan la última
 fecha de muestreo. El script no descarga meteorología ni reentrena la ANN.
+
+El pool y la calibración son capas distintas: desactivar la calibración
+conserva la referencia histórica 2025–2026. Los conteos 2026 intervienen tanto
+en la referencia final como en su ajuste retrospectivo; ese ajuste no es una
+evaluación independiente. La huella del perfil incluye el CSV del pool local.
 
 ## Datos admitidos
 
@@ -260,7 +333,8 @@ python -m pytest -q
 ```
 
 Las pruebas cubren los límites biofísicos, el decaimiento y la extinción de la
-cohorte, la referencia local, la asimilación, la cobertura variable, la
+cohorte, las exclusiones y disponibilidad temporal del pool, los gráficos,
+los límites de ambos semáforos, la asimilación, la cobertura variable, la
 persistencia y los escenarios.
 
 ## Alcance

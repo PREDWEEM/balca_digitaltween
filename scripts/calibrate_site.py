@@ -24,7 +24,7 @@ from predweem_twin.calibration import (  # noqa: E402
 )
 from predweem_twin.core import ModelParameters, PracticalANNModel, run_predweem  # noqa: E402
 from predweem_twin.observations import prepare_observations, read_observation_file  # noqa: E402
-from predweem_twin.seasonal import load_seasonal_reference  # noqa: E402
+from predweem_twin.seasonal import EXCLUDED_YEARS, load_local_seasonal_reference  # noqa: E402
 
 
 def build_calibration(observations_path, weather_path, output_path, site="Balcarce",
@@ -50,16 +50,14 @@ def build_calibration(observations_path, weather_path, output_path, site="Balcar
     if "TipoDato" in weather and weather["TipoDato"].eq("Pronostico").any():
         raise ValueError("La calibración histórica no admite filas de pronóstico.")
     model = PracticalANNModel.from_directory(ROOT / "models")
-    reference = load_seasonal_reference(
-        ROOT / "models/modelo_clusters_k3.pkl", excluded_years=(),
-        include_patterns=("balcarce",),
-    )
+    reference = load_local_seasonal_reference(ROOT, as_of=last_count)
     parameters = ModelParameters(cobertura_pct=coverage, w_max=w_max)
 
     def simulate(cutoff, end=None):
         return run_predweem(
             weather.loc[weather["Fecha"] <= (end if end is not None else cutoff)],
-            model, parameters, normalization_as_of=cutoff, seasonal_reference=reference,
+            model, parameters, normalization_as_of=cutoff,
+            seasonal_reference=load_local_seasonal_reference(ROOT, as_of=cutoff),
         )
 
     trajectory = simulate(last_count)
@@ -143,7 +141,10 @@ def build_calibration(observations_path, weather_path, output_path, site="Balcar
         "model_parameters": asdict(parameters),
         "seasonal_reference": {
             "include_patterns": ["balcarce"],
-            "excluded_years": [],
+            "excluded_years": list(EXCLUDED_YEARS),
+            "excluded_campaigns": reference["Campanas_Excluidas"].iloc[0],
+            "years": reference["Campanas_Anos"].iloc[0],
+            "source_2026": reference.attrs["source_2026"],
             "n_campaigns": int(reference["N_Campanas"].iloc[0]),
             "campaigns": reference["Campanas"].iloc[0],
         },
@@ -160,7 +161,7 @@ def build_calibration(observations_path, weather_path, output_path, site="Balcar
         },
         "validation": validation,
         "limitations": [
-            "Una sola campaña incompleta. No se estima ni transfiere un total estacional.",
+            "Ajuste retrospectivo con conteos 2026 y pool local 2025–2026; no es validación independiente ni se transfiere un total estacional.",
             initial_note,
             f"Cobertura de {coverage:g} % y Wmax de {w_max:g} mm son supuestos de la configuración operativa; el archivo no informa manejo ni cobertura.",
             "El archivo FECHA + PLM2 no incluye repeticiones. Se utiliza un piso de ponderación común, no un error de muestreo medido.",
