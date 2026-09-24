@@ -1,9 +1,9 @@
 {
-  "ejecucion_utc": "2026-09-24T15:24:23+00:00",
+  "ejecucion_utc": "2026-09-24T21:59:17+00:00",
   "sitio": "Balcarce / INTA",
   "latitud": -37.7664,
   "longitud": -58.2999,
-  "estado_siga": "SIGA_remoto",
+  "estado_siga": "SIGA_cache",
   "ultima_observacion_siga": "2026-09-21",
   "huecos_siga": [
     "2026-04-23",
