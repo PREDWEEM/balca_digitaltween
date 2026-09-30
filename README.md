@@ -103,6 +103,34 @@ El final del archivo no certifica el fin biológico de la emergencia y el
 100 % no representa agotamiento del banco de semillas. El flujo histórico
 se deriva del acumulado interpolado; no son observaciones diarias.
 
+## Alerta preventiva de inicio y fecha de monitoreo
+
+Activada por defecto en **Configuración del gemelo**, con opción de desactivarla.
+Consulta la trayectoria base de Balcarce desde el comienzo de la campaña y avisa
+cuando `Primer_Pico_Habilitado` se activa entre mañana y el séptimo día, inclusive.
+Muestra la fecha modelada y los días de anticipación disponibles para organizar
+una recorrida. Funciona sin conteos de campo. Si hay un conteo positivo del lote
+hasta el corte, informa que ya había emergencia a más tardar en esa visita;
+no lo convierte en el día exacto de inicio.
+
+El gráfico de flujo muestra una **flecha vertical violeta** sobre el día calendario
+de la alerta inicial de monitoreo: **inicio modelado menos siete días**, con etiqueta
+`DD/MM/AAAA · estimada`. Se conserva en las vistas semanal y diaria, sin moverla al
+lunes ni al centro de la columna. Se recalcula con la información disponible al
+corte; no acredita que se haya emitido un aviso en esa fecha. Sin inicio modelado
+en el horizonte, con la alerta desactivada o fuera del calendario visible, no se dibuja.
+
+La alerta **no desplaza curvas ni el origen del tiempo térmico** y conserva los
+umbrales, el decaimiento Weibull y la extinción de la cohorte de Balcarce.
+Es un aviso visual en la app, no una notificación externa. Puede anticipar hasta
+siete días; no garantiza detectar cada inicio. Si faltan días, indica horizonte
+incompleto y no descarta emergencia; una señal positiva dentro de los días
+disponibles sí activa vigilancia preventiva. Las revisiones con meteorología
+histórica o emisiones posteriores al corte se identifican explícitamente y no
+equivalen a pronósticos emitidos anticipadamente.
+El detalle queda en Trazabilidad y en el estado guardado (`onset_alert`), incluida
+la fecha estimada (`monitoring_alert_date`).
+
 ## Gráficos y configuración
 
 La configuración está en el cuerpo principal, sin menú lateral. Dos gráficos
@@ -115,9 +143,21 @@ No se muestran curvas anuales históricas separadas en el gráfico principal.
 El flujo inicia en vista **Semanal**, con alternativa **Diario**. Ambas series
 usan porcentaje del total por semana o día: histórico respecto de su ventana
 registrada y gemelo respecto del total estacional estimado. Las semanas se
-suman de lunes a domingo; las barras parciales se rayan y muestran cuántos
+suman de lunes a domingo; las barras parciales se muestran grises y rayadas e indican cuántos
 días incluyen. La interpolación entre visitas suaviza los picos históricos.
 El cambio de frecuencia no altera el acumulado ni el estado del gemelo.
+
+Las columnas completas se colorean con la misma clasificación del indicador:
+**rojo** (>75 % del máximo semanal histórico), **naranja** (25–75 % inclusive),
+**amarillo** (>0 y <25 %) y **verde** (flujo cero). El denominador proviene del
+pool local de Balcarce 2025–2026 disponible para la fecha consultada: antes del
+15/08/2026 se usa únicamente 2025. Esta comparación solo determina el color;
+la altura sigue siendo el porcentaje del total estacional. El histórico usa los
+mismos colores con menor opacidad. Las semanas completas sin flujo del gemelo se
+señalan con marcas verdes en y=0. Una semana parcial, inválida o un flujo positivo
+sin máximo histórico disponible queda sin categoría, en gris. El cursor muestra
+la categoría y el porcentaje del máximo. Las barras abarcan lunes–domingo;
+el indicador a siete días utiliza mañana–día 7, que puede cruzar dos semanas.
 
 ## Intensidad de emergencia a siete días
 
