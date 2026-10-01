@@ -28,7 +28,7 @@
   },
   "observations_start": "2026-03-12",
   "initial_zero_reference": true,
-  "model_fingerprint": "5debd04920151ef9dd52fffd816c85d9756b9c0a6ad2d241205e60f43cb7a036",
+  "model_fingerprint": "dcd95557c1046c444fc05a721c87eeaf8d4072abcfe09449cb069a08d11c3f98",
   "model_parameters": {
     "cobertura_pct": 10.0,
     "w_max": 10.0,
@@ -128,5 +128,16 @@
     "Un parámetro en su límite indica que persisten diferencias estructurales.",
     "El ajuste no reduce automáticamente la incertidumbre de asimilación.",
     "Los gráficos de la campaña de ajuste son retrospectivos, no predicciones independientes."
-  ]
+  ],
+  "normalization_revision": {
+    "date": "2026-10-01",
+    "previous_model_fingerprint": "5debd04920151ef9dd52fffd816c85d9756b9c0a6ad2d241205e60f43cb7a036",
+    "verification": "Reproducido el ajuste en la fecha de cierre original; parámetros y errores de ajuste sin cambios. La disponibilidad operativa ya no se sustituye por cero.",
+    "parameters_unchanged": true,
+    "fit_metrics_unchanged": true,
+    "metrics_checked": [
+      "rmse_base_plm2",
+      "rmse_calibrated_plm2"
+    ]
+  }
 }
