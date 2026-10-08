@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "site": "Balcarce",
+  "species": "Lolium multiflorum",
+  "species_check": "NO es Avena fatua. La serie corresponde al panel de Lolium multiflorum (página 3 del PDF, leyenda 'Lolium multiflorum Balcarce', serie verde). La Avena fatua está en el panel de la página 4 y no se usa.",
+  "campaign": 2014,
+  "reference": {
+    "citation": "Diez de Ulzurrun P., Vigna M., Leaden M.I., Martino C. (2015). Patrones de emergencia de Avena fatua (L.) y Lolium multiflorum (Lam.) en el sudeste y sudoeste de la provincia de Buenos Aires. XXII Congreso de la ALAM / I Congreso de la ASACIM (Malezas 2015), Buenos Aires, 9–10 de septiembre de 2015.",
+    "available_from": "2015-09-10",
+    "pdf": "balcarce_2014_diez_de_ulzurrun_2015.pdf",
+    "pdf_sha256": "6387fd323bab021b0a13f94c853c1427bcc53ef57c7a23fa56e148f996ac7a89",
+    "figure": "Figura 2 (panel Lolium multiflorum), página 3 del PDF; la leyenda del pie de figura indica 'marzo a diciembre de 2014'",
+    "series": "Lolium multiflorum Balcarce (marcador verde)"
+  },
+  "method_in_paper": "Conteo semanal de plantas emergidas en 1 m² con tres repeticiones, lote con infestación natural, EEA Balcarce INTA (37°45'S, 58°18'O, 130 m). Las plántulas se eliminaron después de cada muestreo. Se expresa el % de emergencia semanal respecto del total del año. El texto de Métodos dice 'hasta octubre de 2015': se interpreta como error tipográfico, porque el pie de figura y las fechas indican 2014.",
+  "digitization": {
+    "kind": "digitalizado de una figura vectorial (centros de marcadores leídos del PDF), no tabla original",
+    "file": "balcarce_2014_weekly.csv",
+    "sha256": "031872721985144e7af556e00546cabb54d56cc2f5ea7fd5560767a66c340e40",
+    "columns": "FECHA (fin de la semana de muestreo), PORC_SEMANAL (% del total anual de la semana)",
+    "axis_calibration": "eje y calibrado con las etiquetas 0, 10 y 20; se resta 0,16 puntos de desplazamiento de base común (valores mínimos ≈0)",
+    "sample_dates": "10/03/2014 + 7 días, 31 muestreos hasta el 06/10/2014",
+    "sum_percent": 100.22,
+    "precision": "del orden de décimas de punto porcentual; valores < 0,3 equivalen a cero dentro del error",
+    "checks": {
+      "marzo_abril_percent": 83.5,
+      "texto_del_trabajo": "más del 80 % en marzo y abril (Balcarce)",
+      "agosto_septiembre_percent": 1.8
+    },
+    "requested_improvement": "solicitar a los autores la tabla de conteos original"
+  },
+  "units": "porcentaje semanal del total anual; no se informan plantas/m²",
+  "no_initial_zero": "El primer muestreo (10/03) concentra el 18,1 % del total y su intervalo previo es desconocido: la curva empieza en ese muestreo y no certifica ausencia previa de emergencia.",
+  "weather": {
+    "station": "SIGA–INTA A872824, Balcarce – EEA Balcarce (archivo A872824_3.xls recibido el 08/10/2026)",
+    "original_file": "A872824_3.xls",
+    "original_file_sha256": "516c123361ff257ebc58911c61c9817dea065ee832ac09b908030411e48dde6c",
+    "file": "balcarce_2014_weather.csv",
+    "sha256": "a961ada15046f4409c55650dffd65e85b400c3278ef44571755be98b2fa932cf",
+    "columns": "TMAX y TMIN: Temperatura_Abrigo_150cm; Prec: Precipitacion_Pluviometrica",
+    "gaps": "faltan los días 16 a 20/03/2014 y hay valores vacíos el 15 y 21/03, 25–27 y 30/04 en alguna variable (semana que concentra el 35 % del total). Julio y agosto sin lluvia, coherente con la Figura 1 del trabajo.",
+    "used_by_model": false
+  },
+  "role": "referencia del pool local con igual peso que las demás campañas; no ajusta los parámetros del motor ni se asimila como observación del lote, pero su mediana participa del denominador de la normalización parcial del porcentaje"
+}

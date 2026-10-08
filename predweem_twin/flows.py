@@ -34,10 +34,11 @@ def annual_historical_reference(reference, as_of):
         )
     # El resumen operativo conserva su supuesto de normalización hasta el
     # final del eje; la curva individual 2026 muestra sólo su ventana real.
-    source_2026 = reference.attrs.get("source_2026", {})
-    if "Progreso_2026" in frame and source_2026.get("end"):
-        end_day = pd.Timestamp(source_2026["end"]).dayofyear
-        frame.loc[days > end_day, "Progreso_2026"] = np.nan
+    for year in (2014, 2026):
+        window = reference.attrs.get(f"source_{year}", {})
+        if f"Progreso_{year}" in frame and window.get("end"):
+            end_day = pd.Timestamp(window["end"]).dayofyear
+            frame.loc[days > end_day, f"Progreso_{year}"] = np.nan
     frame["Flujo_Diario"] = frame["Progreso_Mediano"].diff().clip(lower=0)
     if axis[0] == 1:
         frame.loc[0, "Flujo_Diario"] = frame.loc[0, "Progreso_Mediano"]

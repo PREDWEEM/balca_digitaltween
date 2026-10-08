@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from hashlib import sha256
+import json
 import pickle
 
 import numpy as np
@@ -59,12 +60,59 @@ def load_seasonal_reference(
     })
 
 
-def load_local_seasonal_reference(root: str | Path, as_of=None) -> pd.DataFrame:
-    """Combina Balcarce 2025 con el período registrado de 2026.
+LOCAL_2014 = {
+    "counts": "data/reference/balcarce_2014_weekly.csv",
+    "source": "data/reference/balcarce_2014_source.json",
+    "name": "balcarce_2014_weekly.csv",
+}
 
-    El total 2026 sólo está disponible desde el último conteo. Antes de esa
-    fecha se utiliza exclusivamente 2025, también en evaluaciones temporales.
-    Se interpola el acumulado entre visitas, conservando la masa de cada
+
+def _load_2014(root: Path) -> tuple[pd.Series, dict]:
+    """Carga la serie semanal 2014 de *Lolium multiflorum* en EEA Balcarce.
+
+    Es una digitalización del panel de Lolium (no de Avena fatua) de un trabajo
+    publicado. Se valida la procedencia, el hash y la forma de la serie para
+    que no se pueda reemplazar por la de otra especie o localidad.
+    """
+    source_path = root / LOCAL_2014["source"]
+    counts_path = root / LOCAL_2014["counts"]
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    if (source.get("site") != "Balcarce" or source.get("species") != "Lolium multiflorum"
+            or source.get("campaign") != 2014):
+        raise ValueError("La referencia 2014 debe ser Lolium multiflorum de Balcarce.")
+    if sha256(counts_path.read_bytes()).hexdigest() != source["digitization"]["sha256"]:
+        raise ValueError("La serie Balcarce 2014 no coincide con su procedencia.")
+    pdf_path = source_path.parent / source["reference"]["pdf"]
+    if sha256(pdf_path.read_bytes()).hexdigest() != source["reference"]["pdf_sha256"]:
+        raise ValueError("El PDF de procedencia de Balcarce 2014 no coincide con su hash.")
+    frame = pd.read_csv(counts_path)
+    if list(frame.columns) != ["FECHA", "PORC_SEMANAL"]:
+        raise ValueError("La serie Balcarce 2014 requiere FECHA y PORC_SEMANAL.")
+    dates = pd.to_datetime(frame["FECHA"], errors="raise").dt.normalize()
+    values = pd.to_numeric(frame["PORC_SEMANAL"], errors="raise").to_numpy(float)
+    if (dates.isna().any() or dates.duplicated().any() or not dates.is_monotonic_increasing
+            or not dates.dt.year.eq(2014).all() or len(frame) < 10
+            or not np.isfinite(values).all() or (values < 0).any()
+            or not 99.0 <= values.sum() <= 101.0):
+        raise ValueError("Serie Balcarce 2014 inválida: debe sumar ~100 % semanal.")
+    # Verificación de especie con las cifras del propio trabajo: Lolium concentró
+    # más del 80 % en marzo–abril y casi nada en agosto–septiembre; Avena fatua
+    # tuvo ~70 % y un flujo secundario agosto–septiembre.
+    series = pd.Series(values, index=dates)
+    share_spring = series[:"2014-04-30"].sum() / values.sum()
+    share_late = series["2014-08-01":"2014-09-30"].sum() / values.sum()
+    if share_spring <= 0.80 or share_late >= 0.03:
+        raise ValueError("La serie Balcarce 2014 no corresponde a Lolium multiflorum.")
+    return series, source
+
+
+def load_local_seasonal_reference(root: str | Path, as_of=None) -> pd.DataFrame:
+    """Combina Balcarce 2014, 2025 y 2026 en el pool local.
+
+    El total 2026 sólo está disponible desde el último conteo. 2014 desde la
+    publicación del trabajo (10/09/2015). Antes de esas fechas se excluyen las
+    campañas aún no disponibles, también en evaluaciones temporales. Se
+    interpola el acumulado entre visitas, conservando la masa de cada
     intervalo. No se atribuyen conteos diarios ni ceros anteriores al inicio.
     Cada campaña disponible tiene igual peso, independientemente de su densidad.
     """
@@ -93,10 +141,14 @@ def load_local_seasonal_reference(root: str | Path, as_of=None) -> pd.DataFrame:
     if cutoff is not None and pd.isna(cutoff):
         raise ValueError("Fecha de corte de la referencia inválida.")
     use_2026 = cutoff is None or cutoff >= available_from
+
+    series_2014, source_2014 = _load_2014(root)
+    available_2014 = pd.Timestamp(source_2014["reference"]["available_from"])
+    use_2014 = cutoff is None or cutoff >= available_2014
+
     reference["Progreso_2025"] = reference["Progreso_Mediano"]
-    reference["Campanas_Anos"] = "2025"
-    reference["N_Campanas_Dia"] = 1
     reference["Referencia_2026_Desde"] = available_from.date().isoformat()
+    reference["Referencia_2014_Desde"] = available_2014.date().isoformat()
     reference.attrs["source_2026"] = {
         "path": "data/calibration/balcarce_2026_counts.csv",
         "sha256": sha256(counts_path.read_bytes()).hexdigest(),
@@ -108,30 +160,59 @@ def load_local_seasonal_reference(root: str | Path, as_of=None) -> pd.DataFrame:
         "processing": "acumulado / total registrado; interpolación lineal entre visitas",
         "scope": "ventana registrada; no certifica el cierre biológico de la campaña",
     }
-    if not use_2026:
-        reference["Campanas_Excluidas"] += (
-            f", {counts_path.name} (disponible desde {available_from:%d/%m/%Y})"
+    reference.attrs["source_2014"] = {
+        "path": LOCAL_2014["counts"],
+        "sha256": sha256((root / LOCAL_2014["counts"]).read_bytes()).hexdigest(),
+        "provenance": LOCAL_2014["source"],
+        "species": source_2014["species"],
+        "start": series_2014.index[0].date().isoformat(),
+        "end": series_2014.index[-1].date().isoformat(),
+        "sample_count": len(series_2014),
+        "window_total_percent": float(series_2014.sum()),
+        "used": use_2014,
+        "kind": "digitalizado de la Figura 2 (panel Lolium multiflorum); % semanal del total anual",
+        "processing": "acumulado / total de la serie; interpolación lineal entre muestreos",
+        "scope": "sin cero inicial: empieza en el primer muestreo (10/03) y no certifica ausencia previa",
+    }
+    names = {2014: LOCAL_2014["name"], 2025: "emererel2025 balcarce.xlsx", 2026: counts_path.name}
+    used_years = [2025]
+    if use_2014:
+        progress_2014 = np.cumsum(series_2014.to_numpy()) / series_2014.sum()
+        reference["Progreso_2014"] = np.interp(
+            reference["Julian_days"], series_2014.index.dayofyear, progress_2014,
+            left=np.nan, right=1.0,
         )
+        used_years.insert(0, 2014)
+    if use_2026:
+        progress_2026 = np.cumsum(flows) / flows.sum()
+        reference["Progreso_2026"] = np.interp(
+            reference["Julian_days"], dates.dt.dayofyear, progress_2026,
+            left=np.nan, right=1.0,
+        )
+        used_years.append(2026)
+    pending = [
+        f"{names[y]} (disponible desde {d:%d/%m/%Y})"
+        for y, d, flag in ((2014, available_2014, use_2014), (2026, available_from, use_2026))
+        if not flag
+    ]
+    reference["Campanas_Excluidas"] += "".join(f", {item}" for item in pending)
+    reference["Campanas_Anos"] = ", ".join(str(y) for y in used_years)
+    reference["N_Campanas_Dia"] = 1
+    if len(used_years) == 1:
         return reference
 
-    progress_2026 = np.cumsum(flows) / flows.sum()
-    reference["Progreso_2026"] = np.interp(
-        reference["Julian_days"], dates.dt.dayofyear, progress_2026,
-        left=np.nan, right=1.0,
-    )
-    campaigns = reference[["Progreso_2025", "Progreso_2026"]]
+    campaigns = reference[[f"Progreso_{y}" for y in used_years]]
     reference["N_Campanas_Dia"] = campaigns.notna().sum(axis=1)
     for q, column in [(0.10, "Progreso_P10"), (0.50, "Progreso_Mediano"), (0.90, "Progreso_P90")]:
         empirical = campaigns.quantile(q, axis=1)
         reference[column + "_Empirico"] = empirical
-        # Al comenzar la ventana 2026 cambia el número de curvas disponibles.
-        # Ese cambio puede bajar el resumen aunque cada campaña sea creciente.
-        # La envolvente acumulativa conserva el avance previo del ancla. Los
-        # cuantiles originales y ambas curvas quedan visibles para auditoría.
+        # Al comenzar la ventana de una campaña cambia el número de curvas
+        # disponibles. Ese cambio puede bajar el resumen aunque cada campaña sea
+        # creciente. La envolvente acumulativa conserva el avance previo del
+        # ancla. Los cuantiles originales y las curvas quedan visibles para auditoría.
         reference[column] = empirical.cummax()
-    reference["N_Campanas"] = 2
-    reference["Campanas_Anos"] = "2025, 2026"
-    reference["Campanas"] += f", {counts_path.name}"
+    reference["N_Campanas"] = len(used_years)
+    reference["Campanas"] = ", ".join(names[y] for y in used_years)
     return reference
 
 
