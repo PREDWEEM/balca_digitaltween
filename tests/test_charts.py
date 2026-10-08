@@ -82,7 +82,7 @@ def test_historical_backdrop_does_not_leak_2026_into_earlier_cutoffs():
     ref = load_local_seasonal_reference(ROOT, as_of="2026-05-05")
     annual = annual_historical_reference(ref, "2026-05-05")
     assert "Progreso_2026" not in annual
-    assert annual.attrs["campaigns"] == "2025"
+    assert annual.attrs["campaigns"] == "2014, 2025"
 
 
 def test_no_forecast_trace_when_weather_ends_at_cutoff(reference):

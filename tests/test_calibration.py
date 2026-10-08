@@ -165,8 +165,12 @@ def test_calibration_keeps_balcarce_decay_exhaustion_and_local_reference(real_da
     assert saved["model_parameters"]["w_max"] == 10.
     assert saved["model_parameters"]["decay_enabled"]
     assert saved["seasonal_reference"]["include_patterns"] == ["balcarce"]
-    assert saved["seasonal_reference"]["campaigns"] == "emererel2025 balcarce.xlsx, balcarce_2026_counts.csv"
-    assert saved["seasonal_reference"]["n_campaigns"] == 2
+    assert saved["seasonal_reference"]["campaigns"] == (
+        "balcarce_2014_weekly.csv, emererel2025 balcarce.xlsx, balcarce_2026_counts.csv"
+    )
+    assert saved["seasonal_reference"]["n_campaigns"] == 3
+    assert saved["seasonal_reference"]["source_2014"]["species"] == "Lolium multiflorum"
+    assert saved["seasonal_reference"]["source_2014"]["used"]
 
 
 def test_fit_matches_persisted_profile_and_does_not_mutate_network(real_data):

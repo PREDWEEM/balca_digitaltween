@@ -71,31 +71,69 @@ ensanchar la cola del perfil Balcarce.
 
 ## Referencia estacional local
 
-El pool admite **exclusivamente Balcarce 2025 y Balcarce 2026**, con el mismo
-peso por campaña, independientemente de la cantidad de plantas registrada:
+El pool admite **exclusivamente Balcarce 2014, Balcarce 2025 y Balcarce 2026**,
+con el mismo peso por campaña, independientemente de la unidad o cantidad de
+plantas registrada:
 
+- **2014:** serie semanal de *Lolium multiflorum* en Balcarce digitalizada de
+  la Figura 2 de Diez de Ulzurrun, Vigna, Leaden y Martino (2015, ALAM/ASACIM).
+  Está en `data/reference/balcarce_2014_weekly.csv` (31 muestreos, 10/03 al
+  06/10/2014, **porcentaje semanal del total anual**, no plantas/m²).
+  La procedencia, el hash del PDF y del CSV, el método de digitalización y la
+  verificación de especie están en `balcarce_2014_source.json`.
 - **2025:** curva `emererel2025 balcarce.xlsx`, identificada dentro de
   `models/modelo_clusters_k3.pkl` y normalizada por su propio total.
 - **2026:** `data/calibration/balcarce_2026_counts.csv`, 18 fechas del
   **12/03 al 15/08/2026**, con **8280 plantas/m²** registradas. El acumulado
   se divide por el total de esa ventana y se interpola entre visitas.
 
-Quedan excluidas 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2023, 2024,
-San Pedro y Tres Arroyos 2025. Una lista positiva del nombre de Balcarce 2025
-impide incorporar otras series por cambios en los filtros o en el archivo
-compartido. No se modifican las curvas originales del modelo.
+Quedan excluidas 2008, 2009, 2010, 2011, 2012, 2013, 2015, 2023, 2024, San
+Pedro y Tres Arroyos 2025, y la curva sin etiquetar `2014.xlsx` del archivo
+compartido (no es la serie publicada). Una lista positiva impide incorporar
+otras series por cambios en los filtros o en el archivo compartido. No se
+modifican las curvas originales del modelo.
 
-La referencia 2026 se habilita desde el **15/08/2026**, cuando se conoce su
-total registrado. Para cortes anteriores se usa **sólo 2025**, incluso al
-ajustar y evaluar intervalos de la calibración. En 2027 se usan ambas campañas.
-La inclusión en el pool no inserta esos conteos como observaciones del lote.
+**Limitaciones de Balcarce 2014**
 
-Antes del 12 de marzo no hay referencia 2026: el resumen usa 2025. Al sumarse
-la segunda curva, los cuantiles pueden disminuir por el cambio de composición;
-se conserva el máximo acumulado previo para evitar retrocesos artificiales.
-Los cuantiles empíricos, las dos curvas, el número de campañas por día y las
+- Es una digitalización de un gráfico vectorial (centros de marcador y
+  calibración de ejes); la precisión es del orden de décimas de punto
+  porcentual (valores menores a 0,3 equivalen a cero). No es la tabla original. La suma es 100,22 %, que se normaliza.
+- **No tiene cero inicial:** la primera semana (10/03) ya concentra 18,1 % y
+  la siguiente 35,3 %. No se infiere ausencia previa de emergencia; el progreso
+  anterior al 10/03 queda sin dato en esa curva.
+- Se verificó que es *Lolium* y no *Avena fatua* (leyenda, página y porcentajes
+  del texto): 83,5 % entre marzo y abril (el trabajo indica más del 80 %) y 1,8 % en
+  agosto–septiembre. El
+  cargador rechaza una serie que no cumpla esa forma, o cuyo hash no coincida.
+- La meteorología SIGA A872824 de 2014 se guarda como respaldo
+  (`balcarce_2014_weather.csv`) pero **el modelo no la usa**. Tiene un hueco del
+  16 al 20/03/2014, justo en la semana de mayor emergencia.
+
+La referencia 2014 se habilita desde el **10/09/2015** (presentación del
+trabajo); para cortes anteriores no se usa. La referencia 2026 se habilita
+desde el **15/08/2026**, cuando se conoce su total registrado. Para cortes
+anteriores a esas fechas se usa solo lo disponible, incluso al ajustar y
+evaluar intervalos de la calibración: hasta el 09/09/2015 solo 2025, entre 10/09/2015 y 14/08/2026 se usan
+2014 y 2025 y desde 15/08/2026 las tres campañas. La inclusión en el pool no
+inserta esos conteos como observaciones del lote.
+
+**Efecto sobre el porcentaje mostrado.** En Balcarce la mediana del pool fija
+el denominador de la normalización parcial (total estacional estimado =
+emergencia acumulada / progreso mediano a la fecha de corte). Por eso sumar
+2014 **no es solo descriptivo**: baja el progreso mediano de referencia y sube
+el total estacional estimado en cortes de otoño. Con la meteorología 2026 el
+progreso mediano a fecha pasa, por ejemplo, de 82 % a 69 % el 31/03 y de 91 % a
+85 % el 15/04 y de 99,3 % a 97,8 % el 31/05; la diferencia
+se reduce hacia el final de la temporada. Los parámetros de calibración
+(offset 0,65; pendiente 1,425) no cambian, pero los retrospectivos por corte sí.
+
+Antes del 10 de marzo no hay referencia 2014 y antes del 12 de marzo no hay
+referencia 2026. Al sumarse una curva, los cuantiles pueden disminuir por el
+cambio de composición; se conserva el máximo acumulado previo para evitar
+retrocesos artificiales (P10 queda plano unos días a mediados de marzo).
+Los cuantiles empíricos, las curvas, el número de campañas por día y las
 exclusiones se pueden consultar y descargar en **Trazabilidad**. P10 y P90
-son descriptivos de estos dos años, no intervalos de confianza.
+son descriptivos de estos pocos años, no intervalos de confianza.
 
 Después del último conteo de 2026 se conserva su 100 % como supuesto de
 referencia; la curva individual auditable se limita a la ventana registrada.

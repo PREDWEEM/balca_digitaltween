@@ -144,6 +144,7 @@ def build_calibration(observations_path, weather_path, output_path, site="Balcar
             "excluded_years": list(EXCLUDED_YEARS),
             "excluded_campaigns": reference["Campanas_Excluidas"].iloc[0],
             "years": reference["Campanas_Anos"].iloc[0],
+            "source_2014": reference.attrs["source_2014"],
             "source_2026": reference.attrs["source_2026"],
             "n_campaigns": int(reference["N_Campanas"].iloc[0]),
             "campaigns": reference["Campanas"].iloc[0],

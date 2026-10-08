@@ -241,6 +241,7 @@ seasonal_reference = load_progress_reference(as_of)
 reference_campaigns = int(seasonal_reference["N_Campanas"].iloc[0])
 reference_years = seasonal_reference["Campanas_Anos"].iloc[0]
 reference_2026_from = pd.Timestamp(seasonal_reference["Referencia_2026_Desde"].iloc[0])
+reference_2014_from = pd.Timestamp(seasonal_reference["Referencia_2014_Desde"].iloc[0])
 store = load_store()
 coverage_observations = store.coverage_observations(site_id)
 active_coverage = coverage_observations[
@@ -337,9 +338,22 @@ st.caption(
     f"({reference_campaigns} campaña{'s' if reference_campaigns > 1 else ''}). "
     "Las campañas aportan el mismo peso. Los percentiles son descriptivos y "
     "preliminares con tan pocos años; no son intervalos de confianza. "
-    "Se excluyen 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2023, 2024, San Pedro y Tres Arroyos 2025. "
-    "El pool admite exclusivamente Balcarce 2025 y los conteos locales de 2026."
+    "Se excluyen 2008, 2009, 2010, 2011, 2012, 2013, 2015, 2023, 2024, San Pedro y Tres Arroyos 2025. "
+    "El pool admite exclusivamente Balcarce 2014, 2025 y los conteos locales de 2026."
 )
+if seasonal_reference.attrs["source_2014"]["used"]:
+    st.caption(
+        "Balcarce 2014 (Diez de Ulzurrun et al., 2015) es una serie digitalizada del gráfico "
+        "de Lolium multiflorum: aporta porcentaje semanal, no plantas/m²; no registra cero inicial "
+        "(primera semana con 18 % del total) y su meteorología tiene un hueco del 16 al 20/03. "
+        "Al igual que el resto del pool, su mediana fija el denominador de la normalización "
+        f"estacional. Disponible desde el {reference_2014_from:%d/%m/%Y}."
+    )
+else:
+    st.caption(
+        f"Balcarce 2014 se habilita desde el {reference_2014_from:%d/%m/%Y}; "
+        "este corte no lo utiliza."
+    )
 if seasonal_reference.attrs["source_2026"]["used"]:
     st.caption(
         f"La referencia 2026 usa el total registrado del 12/03 al {reference_2026_from:%d/%m/%Y}. "
@@ -354,7 +368,8 @@ if seasonal_reference.attrs["source_2026"]["used"]:
 else:
     st.caption(
         f"La referencia 2026 se habilita desde el {reference_2026_from:%d/%m/%Y}. "
-        "Para este corte se utiliza únicamente Balcarce 2025."
+        "Para este corte se utilizan solo las campañas ya disponibles: "
+        f"{reference_years}."
     )
 if not forecast_metadata["complete"]:
     st.warning(
@@ -1069,8 +1084,8 @@ with tab_audit:
     with st.expander("Curvas de la referencia local"):
         st.dataframe(seasonal_reference, hide_index=True, width="stretch")
         st.caption(
-            "Progreso entre 0 y 1. Antes del primer conteo de 2026, la mediana usa "
-            "Balcarce 2025. Al incorporar otra curva se conserva el avance previo "
+            "Progreso entre 0 y 1. La mediana usa solo las campañas disponibles a la "
+            "fecha de corte (2014 desde 10/09/2015; 2026 desde su último conteo). Al incorporar otra curva se conserva el avance previo "
             "para evitar un retroceso del acumulado; los cuantiles originales "
             "se muestran como Empirico. Después del último conteo, 2026 mantiene "
             "el total de su ventana como supuesto de referencia; no son nuevas observaciones."

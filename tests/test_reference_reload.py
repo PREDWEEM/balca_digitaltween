@@ -38,7 +38,7 @@ def test_app_reloads_reference_after_loader_changes():
         updated = loader()
         assert returned["calls"] == 2
         assert {"Campanas", "Campanas_Excluidas"}.issubset(updated.columns)
-        assert updated.N_Campanas.eq(2).all()
+        assert updated.N_Campanas.eq(3).all()
         assert not updated.Campanas.str.contains("san pedro|tresas", case=False).any()
     finally:
         if hasattr(loader, "clear"):
