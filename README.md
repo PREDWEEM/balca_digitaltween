@@ -466,3 +466,19 @@ estos registros y migra automáticamente las tablas previas conservando sus
 filas. Los CSV exportan el indicador `Normalizacion_Disponible` y el motivo.
 La llamada al motor **sin fecha de corte** conserva el cálculo retrospectivo
 por total del período para diagnósticos; no es la ruta operativa de la app.
+
+## Campaña 2027
+
+La campaña meteorológica se elige por el año calendario de Argentina (`campaign.py`):
+el **1 de enero de 2027** la actualización programada pasa sola a 2027 y escribe
+archivos propios, sin modificar la serie 2026:
+
+- `data/meteo_daily_2027.csv` (serie operativa)
+- `data/estado_actualizacion_meteo_2027.json` (estado)
+- `data/siga_balcarce_observado_2027.csv` (caché SIGA)
+
+Cada campaña va del 1 de enero al 1 de octubre inclusive. El 1 de enero sólo hay pronóstico; durante los primeros diez días, si SIGA todavía no publicó el año nuevo, las fechas vencidas se completan con ECMWF IFS provisional.
+La aplicación incluye un selector de campaña; abre la campaña actual en cuanto
+tiene meteorología y, hasta entonces, la última campaña con datos.
+Para regenerar una campaña concreta: `python actualizar_meteo_balcarce.py --year 2026`.
+El actualizador rechaza una campaña que aún no comenzó.
